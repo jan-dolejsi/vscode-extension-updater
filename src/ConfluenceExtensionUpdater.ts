@@ -18,6 +18,8 @@ export interface ConfluenceOptions {
 
 /**
  * Downloads extension updates from a Confluence page attachments.
+ * Here is documentation about the Confluence REST API:
+ * https://docs.atlassian.com/atlassian-confluence/REST/6.6.0/#content/{id}/child/attachment-getAttachments
  */
 export class ConfluenceExtensionUpdater extends ExtensionUpdater {
 
