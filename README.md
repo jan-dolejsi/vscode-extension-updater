@@ -83,7 +83,7 @@ Essentially, the only thing you may need to do is to implement this abstract met
 
 import { ExtensionUpdater, ExtensionVersion } from './ExtensionUpdater';
 
-export class ConfluenceExtensionUpdater extends ExtensionUpdater {
+export class YourExtensionUpdater extends ExtensionUpdater {
 
     constructor(context: ExtensionContext, options: YourMarketplaceOptions) {
         super(context);
