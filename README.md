@@ -1,5 +1,8 @@
 # Visual Studio Code custom extension updater for private extension marketplaces
 
+[![CI](https://github.com/jan-dolejsi/vscode-extension-updater/workflows/Build/badge.svg)](https://github.com/jan-dolejsi/vscode-extension-updater/actions?query=workflow%3ABuild)
+[![npm](https://img.shields.io/npm/v/vscode-extension-updater)](https://www.npmjs.com/package/vscode-extension-updater)
+
 For context and motivation, please look at the [Private extension market](https://github.com/microsoft/vscode/issues/21839)
 a.k.a _side loading_.
 
