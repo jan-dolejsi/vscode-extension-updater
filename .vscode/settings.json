@@ -1,0 +1,15 @@
+{
+    "fileHeaderCommentHelper.languageConfigs": {
+		"language_typescript": {
+			"template": [
+				"/* --------------------------------------------------------------------------------------------",
+				" * Copyright (c) Jan Dolejsi $(date:yyyy). All rights reserved.",
+				" * Licensed under the MIT License. See License.txt in the project root for license information.",
+				" * ------------------------------------------------------------------------------------------ */",
+				"'use strict';",
+				"import { } from 'vscode';"
+			]
+		}
+	},
+    "mocha.files.glob": "out/test/**/*.js"
+}

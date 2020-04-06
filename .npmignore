@@ -1,0 +1,7 @@
+.vscode/
+.eslintrc.*
+tsconfig.json
+src/
+test/
+out/
+*-*.tgz

@@ -1,0 +1,37 @@
+{
+  "name": "vscode-extension-updater",
+  "version": "1.0.0",
+  "description": "Visual Studio Code custom extension updater for private extension marketplaces",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "mocha -- out/test/*.js",
+    "pretest": "eslint ./src/*.ts && npm run compile",
+    "build": "tsc",
+    "compile": "tsc && npm run copyToDist",
+    "copyToDist": "copyfiles --error --verbose --flat ./out/src/*.* ./dist/",
+    "prepack": "npm run test && npm run copyToDist",
+    "watch": "tsc -w"
+  },
+  "keywords": [],
+  "author": "Jan Dolejsi",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chai": "4.1.3",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.9.1",
+    "@types/tmp": "^0.1.0",
+    "@typescript-eslint/eslint-plugin": "^2.24.0",
+    "@typescript-eslint/parser": "^2.24.0",
+    "chai": "^4.2.0",
+    "copyfiles": "2.2.0",
+    "eslint": "^6.8.0",
+    "mocha": "^7.1.0",
+    "nyc": "^15.0.0",
+    "typescript": "^3.8.3",
+    "vscode": "^1.1.36"
+  },
+  "dependencies": {
+    "tmp": "^0.1.0"
+  }
+}
