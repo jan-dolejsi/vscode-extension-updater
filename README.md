@@ -1,3 +1,5 @@
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/jan-dolejsi/vscode-extension-updater) 
+
 # Visual Studio Code custom extension updater for private extension marketplaces
 
 [![CI](https://github.com/jan-dolejsi/vscode-extension-updater/workflows/Build/badge.svg)](https://github.com/jan-dolejsi/vscode-extension-updater/actions?query=workflow%3ABuild)
