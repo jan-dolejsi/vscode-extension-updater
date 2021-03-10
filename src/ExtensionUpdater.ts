@@ -19,6 +19,8 @@ export interface ExtensionVersion {
     version: number;
     when: number;
     downloadUrl: Uri;
+    /** labels/tags in the repository */
+    tags?: string[];
 }
 
 /**
@@ -28,6 +30,11 @@ export interface ExtensionManifest {
     displayName: string;
     name: string;
     publisher: string;
+}
+
+export interface ExtensionUpdaterOptions {
+    /** If `true`, a notification will be displayed when no new version is available. */
+    showUpToDateConfirmation: boolean;
 }
 
 /**
@@ -44,10 +51,10 @@ export abstract class ExtensionUpdater {
      * as well as for the name of the temporary downloaded .vsix file. */
     private extensionFullName: string;
 
-    /** Extension's `pacakge.json` */
+    /** Extension's `package.json` */
     extensionManifest: ExtensionManifest;
 
-    constructor(private context: ExtensionContext) {
+    constructor(private context: ExtensionContext, private options?: ExtensionUpdaterOptions) {
         this.extensionManifest = require(this.context.asAbsolutePath('package.json')) as ExtensionManifest;
         this.extensionFullName = this.extensionManifest.publisher + '.' +  this.extensionManifest.name;
         this.installedExtensionVersionKey = this.extensionFullName + '.lastInstalledConfluenceAttachmentVersion';
@@ -59,6 +66,7 @@ export abstract class ExtensionUpdater {
 
     /**
      * Checks if new version is available, downloads and installs and reloads the window.
+     * @returns `true` if no new version is available
      */
     async getNewVersionAndInstall(): Promise<void> {
 
@@ -66,26 +74,32 @@ export abstract class ExtensionUpdater {
         const newVersion = await this.showProgress(`Checking for updates for ${this.extensionManifest.displayName}`, () =>
             this.getNewVersion());
 
-        if (newVersion && await this.consentToInstall(newVersion)) {
+        if (newVersion) {
 
-            // 2. download
-            const vsixPath = await this.showProgress(`Downloading ${this.extensionManifest.displayName}`, () =>
-                this.download(newVersion.downloadUrl));
+            if (await this.consentToInstall(newVersion)) {
+                // 2. download
+                const vsixPath = await this.showProgress(`Downloading ${this.extensionManifest.displayName}`, () =>
+                    this.download(newVersion.downloadUrl));
 
-            // 3. install
-            await this.showProgress(`Installing ${this.extensionManifest.displayName}`, () =>
-                this.install(vsixPath));
+                // 3. install
+                await this.showProgress(`Installing ${this.extensionManifest.displayName}`, () =>
+                    this.install(vsixPath));
 
-            // store the version number installed
-            this.context.globalState.update(this.installedExtensionVersionKey, newVersion.version);
+                // store the version number installed
+                this.context.globalState.update(this.installedExtensionVersionKey, newVersion.version);
 
-            // 4. reload
-            if (await this.consentToReload()) {
-                await commands.executeCommand('workbench.action.reloadWindow');
+                // 4. reload
+                if (await this.consentToReload()) {
+                    await commands.executeCommand('workbench.action.reloadWindow');
+                }
             }
         }
         else {
-            console.log(`No update found for '${this.extensionManifest.displayName}'`);
+            const message = `No update found for '${this.extensionManifest.displayName}'`;
+            console.log(message);
+            if (this.options?.showUpToDateConfirmation) {
+                window.showInformationMessage(message);
+            }
         }
     }
 
@@ -174,7 +188,7 @@ export abstract class ExtensionUpdater {
         }
     }
 
-    protected abstract async getVersion(): Promise<ExtensionVersion>;
+    protected abstract getVersion(): Promise<ExtensionVersion>;
 
     private showProgress<T>(message: string, payload: () => Thenable<T>): Thenable<T> {
         return window.withProgress({ location: ProgressLocation.Window, title: message }, payload);
