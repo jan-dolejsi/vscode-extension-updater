@@ -1,9 +1,8 @@
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/jan-dolejsi/vscode-extension-updater) 
-
 # Visual Studio Code custom extension updater for private extension marketplaces
 
-[![CI](https://github.com/jan-dolejsi/vscode-extension-updater/workflows/Build/badge.svg)](https://github.com/jan-dolejsi/vscode-extension-updater/actions?query=workflow%3ABuild)
+[![CI](https://github.com/jan-dolejsi/vscode-extension-updater/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/jan-dolejsi/vscode-extension-updater/actions/workflows/npm-publish.yml)
 [![npm](https://img.shields.io/npm/v/vscode-extension-updater)](https://www.npmjs.com/package/vscode-extension-updater)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/jan-dolejsi/vscode-extension-updater)
 
 For context and motivation, please look at the [Private extension market](https://github.com/microsoft/vscode/issues/21839)
 a.k.a _side loading_.
@@ -62,21 +61,61 @@ export function activate(context: ExtensionContext): void {
 
     // ... your extension activation code...
 
-    setTimeout(async () => {
-        try {
-            await new ConfluenceExtensionUpdater(context, {
-                confluenceHost: 'your-confluence-wiki.com',
-                confluencePageId: 123456
-            }).getNewVersionAndInstall();
-        }
-        catch (err) {
-            showError('Failed to download or install new version of the extension: ', err);
-        }
+    setTimeout(() => {
+        checkNewVersion(context, false);
     }, 30000); // give it 30sec before checking
+}
+
+async function checkNewVersion(context: ExtensionContext, showUpToDateConfirmation: boolean): Promise<void> {
+    try {
+        await new ConfluenceExtensionUpdater(context, {
+            confluenceHost: 'your-confluence-wiki.com',
+            confluencePageId: 123456
+            showUpToDateConfirmation: showUpToDateConfirmation
+        }).getNewVersionAndInstall();
+    }
+    catch (err) {
+        showErrorMessage('Failed to check for new version of the the extension: ', err);
+    }
 }
 ```
 
-### Implementing your own adapter to other custom back-end
+### Adding manual check for new version
+
+VS Code supports extension-specific commands. They show in the menu that displays when you click on the cogwheel button of your extension in the Extensions view. Add this to your `package.json`:
+
+```json
+{
+    "contributes": {
+        "commands": [
+            {
+                "command": "yourExt.checkForExtensionUpdate",
+                "title": "yourExt: Check for new extension version..."
+            },
+        ],
+        "menus": {
+            "extension/context": [
+                {
+                    "command": "yourExt.checkForExtensionUpdate",
+                    "when": "extension == publisherId.extensionId && extensionStatus == installed"
+                }
+            ]
+...
+}
+```
+
+... where `publisherId`, `extensionId` and `yourExt` must be replaced with the corresponding values from your `package.json`.
+
+Add this to your `extension.ts` `activate()` method:
+
+```typescript
+    context.subscriptions.push(commands.registerCommand("yourExt.checkForExtensionUpdate", () =>
+        checkNewVersion(context, true).catch(showError)));
+```
+
+In this case, we pass `true` to the `showUpToDateConfirmation` argument, which will show notification even if there is no new version.
+
+## Implementing your own adapter to other custom back-end
 
 Look at the `ConfluenceExtensionUpdater` class as an example of implementation.
 Essentially, the only thing you may need to do is to implement this abstract method:

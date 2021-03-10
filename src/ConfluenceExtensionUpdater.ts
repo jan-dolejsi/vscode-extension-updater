@@ -6,7 +6,7 @@
 
 import * as https from 'https';
 import { ExtensionContext, Uri } from 'vscode';
-import { ExtensionUpdater, ExtensionVersion } from './ExtensionUpdater';
+import { ExtensionUpdater, ExtensionUpdaterOptions, ExtensionVersion } from './ExtensionUpdater';
 
 export interface ConfluenceOptions {
     /** Confluence host e.g. `wiki.my-company.com` */
@@ -34,8 +34,8 @@ export class ConfluenceExtensionUpdater extends ExtensionUpdater {
      * @param context extension context
      * @param options confluence options
      */
-    constructor(context: ExtensionContext, options: ConfluenceOptions) {
-        super(context);
+    constructor(context: ExtensionContext, options: ConfluenceOptions & ExtensionUpdaterOptions) {
+        super(context, options);
         this.confluenceHost = options.confluenceHost;
         this.confluencePageId = options.confluencePageId;
     }
@@ -74,12 +74,14 @@ export class ConfluenceExtensionUpdater extends ExtensionUpdater {
                     resp.on('end', () => {
                         const attachment = JSON.parse(data);
                         if (attachment["results"] && attachment["results"].length > 0) {
-                            const version = attachment["results"][0]["version"]["number"];
-                            const when = Date.parse(attachment["results"][0]["version"]["number"]);
-                            const downloadPath = attachment["results"][0]["_links"]["download"];
-                            const self = Uri.parse(attachment["results"][0]["_links"]["self"]);
+                            const result0 = attachment["results"][0];
+                            const version = result0["version"]["number"];
+                            const when = Date.parse(result0["version"]["when"]);
+                            const downloadPath = result0["_links"]["download"];
+                            const self = Uri.parse(result0["_links"]["self"]);
                             const downloadUrl = Uri.parse(downloadPath).with({ scheme: self.scheme, authority: self.authority });
-                            resolve({ version, when, downloadUrl });
+                            const labels: string[] = result0['metadata']?.['labels']?.['results']?.map((label: never) => label['name']);
+                            resolve({ version, when, downloadUrl, tags: labels });
                         }
                         else {
                             console.dir(attachment);
