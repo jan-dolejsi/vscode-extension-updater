@@ -55,7 +55,7 @@ export abstract class ExtensionUpdater {
     extensionManifest: ExtensionManifest;
 
     constructor(private context: ExtensionContext, private options?: ExtensionUpdaterOptions) {
-        this.extensionManifest = require(this.context.asAbsolutePath('package.json')) as ExtensionManifest;
+        this.extensionManifest = context.extension.packageJSON as ExtensionManifest;
         this.extensionFullName = this.extensionManifest.publisher + '.' +  this.extensionManifest.name;
         this.installedExtensionVersionKey = this.extensionFullName + '.lastInstalledConfluenceAttachmentVersion';
     }
