@@ -115,7 +115,7 @@ export abstract class ExtensionUpdater {
 
         await sleep(1000); // without this, the downloaded file appears to be corrupted
 
-        new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
 
             execFile('code', ["--install-extension", vsixPath, "--force"], {
                 shell: true,
