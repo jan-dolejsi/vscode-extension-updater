@@ -45,7 +45,7 @@ export abstract class ExtensionUpdater {
     /** Key for storing the last installed version in the `globalState` */
     private installedExtensionVersionKey: string;
 
-    
+
     /** Extension publisher + name. 
      * This is used as a key to store the last installed version 
      * as well as for the name of the temporary downloaded .vsix file. */
@@ -154,10 +154,10 @@ export abstract class ExtensionUpdater {
                         console.error(`statusCode: ${resp.statusCode}`);
                         reject(new Error(`Download failed with status code: ${resp.statusCode}`));
                     }
-                    
+
                     // direct the downloaded bytes to the file
                     resp.pipe(localFile);
-                    
+
                     // The whole response has been received. Print out the result.
                     resp.on('close', () => {
                         console.log(`Done downloading extension package to ${downloadedPath.path}`);
