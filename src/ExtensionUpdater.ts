@@ -115,7 +115,7 @@ export abstract class ExtensionUpdater {
      * Installs VSIX package.
      * @param vsixPath path to the downloaded vsix package
      */
-    private async install(vsixPath: string): Promise<void> {
+    protected async install(vsixPath: string): Promise<void> {
         // this command does not take arguments : (
         // await commands.executeCommand('workbench.extensions.action.installVSIX', vsixPath);
 
@@ -149,7 +149,7 @@ export abstract class ExtensionUpdater {
      * Downloads the .vsix from the url
      * @param downloadUri url for the .vsix package download
      */
-    private async download(downloadUri: Uri): Promise<string> {
+    protected async download(downloadUri: Uri): Promise<string> {
         const downloadedPath = await asyncTmp.file(0o644, this.extensionFullName, '.vsix');
         const localFile = fs.createWriteStream(downloadedPath.path);
 
