@@ -6,13 +6,13 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha -- out/test/*.js",
-    "pretest": "eslint ./src/*.ts && npm run compile",
-    "build": "tsc",
-    "compile": "tsc && npm run copyToDist",
-    "copyToDist": "copyfiles --error --verbose --flat ./out/src/*.* ./dist/",
+    "test": "npx mocha -- out/test/*.js",
+    "pretest": "npx eslint ./src/*.ts && npm run compile",
+    "build": "npx tsc",
+    "compile": "npx tsc && npm run copyToDist",
+    "copyToDist": "npx copyfiles --error --verbose --flat ./out/src/*.* ./dist/",
     "prepack": "npm run test && npm run copyToDist",
-    "watch": "tsc -w"
+    "watch": "npx tsc -w"
   },
   "keywords": [
     "vscode",
