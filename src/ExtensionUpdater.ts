@@ -56,8 +56,16 @@ export abstract class ExtensionUpdater {
 
     constructor(private context: ExtensionContext, private options?: ExtensionUpdaterOptions) {
         this.extensionManifest = context.extension.packageJSON as ExtensionManifest;
-        this.extensionFullName = this.extensionManifest.publisher + '.' +  this.extensionManifest.name;
-        this.installedExtensionVersionKey = this.extensionFullName + '.lastInstalledConfluenceAttachmentVersion';
+        this.extensionFullName = this.extensionManifest.publisher + '.' + this.extensionManifest.name;
+        this.installedExtensionVersionKey = this.extensionFullName + '.lastInstalledUpdaterVersion';
+
+        // Migrate any version info from the old key to the new key
+        const deprecatedExtensionVersionKey = this.extensionFullName + '.lastInstalledConfluenceAttachmentVersion';
+        const oldVersion = context.globalState.get(deprecatedExtensionVersionKey);
+        if (oldVersion) {
+            context.globalState.update(this.installedExtensionVersionKey, oldVersion);
+            context.globalState.update(deprecatedExtensionVersionKey, undefined);
+        }
     }
 
     protected getExtensionManifest(): ExtensionManifest {
