@@ -7,11 +7,11 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "npx mocha -- out/test/*.js",
-    "pretest": "npx eslint ./src/*.ts && npm run compile",
+    "pretest": "npx eslint src --ext ts && npm run compile",
     "build": "npx tsc",
     "compile": "npx tsc && npm run copyToDist",
     "copyToDist": "npx copyfiles --error --verbose --flat ./out/src/*.* ./dist/",
-    "prepack": "npm run test && npm run copyToDist",
+    "prepack": "npm install-test && npm run copyToDist",
     "watch": "npx tsc -w"
   },
   "keywords": [
@@ -27,11 +27,11 @@
     "@types/node": "^13.13.51",
     "@types/tmp": "^0.2.0",
     "@types/vscode": "^1.55.0",
-    "@typescript-eslint/eslint-plugin": "^4.22.0",
-    "@typescript-eslint/parser": "^4.22.0",
+    "@typescript-eslint/eslint-plugin": "^4.28.5",
+    "@typescript-eslint/parser": "^4.28.5",
     "chai": "^4.3.4",
     "copyfiles": "2.4.1",
-    "eslint": "^7.25.0",
+    "eslint": "^7.31.0",
     "mocha": "^7.2.0",
     "nyc": "^15.1.0",
     "typescript": "^3.9.9"
