@@ -56,8 +56,16 @@ export abstract class ExtensionUpdater {
 
     constructor(private context: ExtensionContext, private options?: ExtensionUpdaterOptions) {
         this.extensionManifest = context.extension.packageJSON as ExtensionManifest;
-        this.extensionFullName = this.extensionManifest.publisher + '.' +  this.extensionManifest.name;
-        this.installedExtensionVersionKey = this.extensionFullName + '.lastInstalledConfluenceAttachmentVersion';
+        this.extensionFullName = this.extensionManifest.publisher + '.' + this.extensionManifest.name;
+        this.installedExtensionVersionKey = this.extensionFullName + '.lastInstalledUpdaterVersion';
+
+        // Migrate any version info from the old key to the new key
+        const deprecatedExtensionVersionKey = this.extensionFullName + '.lastInstalledConfluenceAttachmentVersion';
+        const oldVersion = context.globalState.get(deprecatedExtensionVersionKey);
+        if (oldVersion) {
+            context.globalState.update(this.installedExtensionVersionKey, oldVersion);
+            context.globalState.update(deprecatedExtensionVersionKey, undefined);
+        }
     }
 
     protected getExtensionManifest(): ExtensionManifest {
@@ -107,7 +115,7 @@ export abstract class ExtensionUpdater {
      * Installs VSIX package.
      * @param vsixPath path to the downloaded vsix package
      */
-    private async install(vsixPath: string): Promise<void> {
+    protected async install(vsixPath: string): Promise<void> {
         // this command does not take arguments : (
         // await commands.executeCommand('workbench.extensions.action.installVSIX', vsixPath);
 
@@ -141,7 +149,7 @@ export abstract class ExtensionUpdater {
      * Downloads the .vsix from the url
      * @param downloadUri url for the .vsix package download
      */
-    private async download(downloadUri: Uri): Promise<string> {
+    protected async download(downloadUri: Uri): Promise<string> {
         const downloadedPath = await asyncTmp.file(0o644, this.extensionFullName, '.vsix');
         const localFile = fs.createWriteStream(downloadedPath.path);
 
