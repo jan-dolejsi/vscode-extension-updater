@@ -6,9 +6,7 @@
 
 import * as https from 'https';
 import * as fs from 'fs';
-import * as path from 'path';
-import { execFile } from 'child_process';
-import { ExtensionContext, Uri, commands, env, window, ProgressLocation } from 'vscode';
+import { ExtensionContext, Uri, commands, window, ProgressLocation } from 'vscode';
 import * as asyncTmp from './asynctmp';
 import { sleep } from './utils';
 
@@ -34,7 +32,9 @@ export interface ExtensionManifest {
 
 export interface ExtensionUpdaterOptions {
     /** If `true`, a notification will be displayed when no new version is available. */
-    showUpToDateConfirmation: boolean;
+    showUpToDateConfirmation?: boolean;
+    /** If `true`, the extension will re-install no matter which version is currently installed. */
+    reInstall?: boolean;
 }
 
 /**
@@ -74,7 +74,6 @@ export abstract class ExtensionUpdater {
 
     /**
      * Checks if new version is available, downloads and installs and reloads the window.
-     * @returns `true` if no new version is available
      */
     async getNewVersionAndInstall(): Promise<void> {
 
@@ -84,14 +83,14 @@ export abstract class ExtensionUpdater {
 
         if (newVersion) {
 
-            if (await this.consentToInstall(newVersion)) {
+            if (this.options?.reInstall || await this.consentToInstall(newVersion)) {
                 // 2. download
-                const vsixPath = await this.showProgress(`Downloading ${this.extensionManifest.displayName}`, () =>
+                const vsixUri = await this.showProgress(`Downloading ${this.extensionManifest.displayName}`, () =>
                     this.download(newVersion.downloadUrl));
 
                 // 3. install
                 await this.showProgress(`Installing ${this.extensionManifest.displayName}`, () =>
-                    this.install(vsixPath));
+                    this.install(vsixUri));
 
                 // store the version number installed
                 this.context.globalState.update(this.installedExtensionVersionKey, newVersion.version);
@@ -113,47 +112,28 @@ export abstract class ExtensionUpdater {
 
     /**
      * Installs VSIX package.
-     * @param vsixPath path to the downloaded vsix package
+     * @param vsixUri local Uri path to the downloaded vsix package
      */
-    protected async install(vsixPath: string): Promise<void> {
-        // this command does not take arguments : (
-        // await commands.executeCommand('workbench.extensions.action.installVSIX', vsixPath);
-
-        const codePath = path.join(env.appRoot, '..', '..', 'bin');
-
+    protected async install(vsixUri: Uri): Promise<void> {
         await sleep(1000); // without this, the downloaded file appears to be corrupted
 
-        return new Promise<void>((resolve, reject) => {
+        console.log(`Installing extension from ${vsixUri}`);
 
-            execFile('code', ["--install-extension", vsixPath, "--force"], {
-                shell: true,
-                cwd: codePath
-            }, (error, stdout, stderr) => {
-                if (error) {
-                    reject(error);
-                    return;
-                }
+        // as documented here: https://code.visualstudio.com/api/references/commands
+        await commands.executeCommand('workbench.extensions.installExtension', vsixUri);
 
-                if (stderr.includes(`Failed Installing Extensions:`)) {
-                    reject(stderr);
-                    return;
-                }
-                console.error(stderr);
-                console.log(stdout);
-                resolve();
-            });
-        });
+        console.log(`Done installing extension from ${vsixUri}`);
     }
 
     /**
      * Downloads the .vsix from the url
      * @param downloadUri url for the .vsix package download
      */
-    protected async download(downloadUri: Uri): Promise<string> {
+    protected async download(downloadUri: Uri): Promise<Uri> {
         const downloadedPath = await asyncTmp.file(0o644, this.extensionFullName, '.vsix');
         const localFile = fs.createWriteStream(downloadedPath.path);
 
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<Uri>((resolve, reject) => {
             https.get(downloadUri.toString(),
                 {
                 },
@@ -170,7 +150,7 @@ export abstract class ExtensionUpdater {
                     resp.on('close', () => {
                         console.log(`Done downloading extension package to ${downloadedPath.path}`);
                         localFile.close();
-                        resolve(downloadedPath.path);
+                        resolve(Uri.file(downloadedPath.path));
                     });
                 }).on("error", (err) => {
                     console.error("Error: " + err.message);
@@ -188,7 +168,7 @@ export abstract class ExtensionUpdater {
 
         const installedVersion = this.getCurrentVersion();
 
-        if (installedVersion < latestVersion.version) {
+        if (this.options?.reInstall || installedVersion < latestVersion.version) {
             return latestVersion;
         }
         else {
