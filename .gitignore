@@ -4,3 +4,4 @@ out/
 
 # npm
 *-*.tgz
+.vscode/diff/
