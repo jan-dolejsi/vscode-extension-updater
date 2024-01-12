@@ -9,6 +9,7 @@
     "test": "npx mocha -- out/test/*.js",
     "pretest": "npx eslint src --ext ts && npm run compile",
     "build": "npx tsc",
+    "prepare": "npm run build && npm run copyToDist",
     "compile": "npx tsc && npm run copyToDist",
     "copyToDist": "npx copyfiles --error --verbose --flat ./out/src/*.* ./dist/",
     "prepack": "npm install-test && npm run copyToDist",
